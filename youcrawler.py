@@ -8,6 +8,10 @@ import os
 
 app = Flask(__name__)
 
+# Define base directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RAW_DATA_DIR = os.path.join(BASE_DIR, 'raw_data')
+
 def extract_title(video_info):
     """Extracts the title from the nested video info dictionary."""
     try:
@@ -41,8 +45,8 @@ def index():
         content_type = request.form['content_type']
         
         # Ensure the 'raw_data' directory exists
-        if not os.path.exists('raw_data'):
-            os.makedirs('raw_data')
+        if not os.path.exists(RAW_DATA_DIR):
+            os.makedirs(RAW_DATA_DIR)
 
         videos = scrapetube.get_channel(channel_username=username, content_type=content_type)
 
@@ -71,12 +75,9 @@ def index():
             video_id = video_info.get('videoId')
             if video_id:
                 transcript = transcripts.get(video_id)
-                if isinstance(transcript, list):
-                    video_links[video_title]["transcript"] = transcript
-                else:
-                    video_links[video_title]["transcript"] = transcript
+                video_links[video_title]["transcript"] = transcript
 
-        json_file_path = 'raw_data/video_links_with_transcripts.json'
+        json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
         try:
             with open(json_file_path, 'w', encoding='utf-8') as json_file:
                 json.dump(video_links, json_file, indent=4, ensure_ascii=False)
@@ -84,7 +85,7 @@ def index():
             app.logger.error(f"Error writing JSON file: {e}")
             return "Error writing JSON file", 500
 
-        output_text_file = 'raw_data/output_transcripts.txt'
+        output_text_file = os.path.join(RAW_DATA_DIR, 'output_transcripts.txt')
         utils.process_transcripts(json_file_path, output_text_file)
 
         return redirect(url_for('result'))
@@ -97,7 +98,7 @@ def result():
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    return send_from_directory('raw_data', filename, as_attachment=True)
+    return send_from_directory(RAW_DATA_DIR, filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=False)
