@@ -85,11 +85,7 @@ def index():
             return "Error writing JSON file", 500
 
         output_text_file = 'raw_data/output_transcripts.txt'
-        try:
-            utils.process_transcripts(json_file_path, output_text_file)
-        except Exception as e:
-            app.logger.error(f"Error processing transcripts: {e}")
-            return "Error processing transcripts", 500
+        utils.process_transcripts(json_file_path, output_text_file)
 
         return redirect(url_for('result'))
 
