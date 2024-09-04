@@ -24,9 +24,7 @@ def process_transcripts(json_file_path, output_file_path):
             formatted_texts.append("\nTranscript not available.\n")
             continue
         
-        if isinstance(transcript, str):
-            formatted_texts.append(f"Title: {title}")
-            formatted_texts.append(f"Link: {link}")
+        if not isinstance(transcript, str):
             formatted_texts.append("\nInvalid transcript data format.\n")
             continue
         
