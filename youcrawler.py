@@ -5,6 +5,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import NotTranslatable, TranscriptsDisabled, VideoUnavailable
 import utils
 import os
+import logging
 
 app = Flask(__name__)
 
@@ -86,6 +87,7 @@ def index():
             return "Error writing JSON file", 500
 
         output_text_file = os.path.join(RAW_DATA_DIR, 'output_transcripts.txt')
+        logging.info(f"Calling process_transcripts with JSON path: {json_file_path} and output path: {output_text_file}")
         utils.process_transcripts(json_file_path, output_text_file)
 
         return redirect(url_for('result'))

@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+import logging
 
 def format_timestamp(seconds):
     """Formats timestamp into HH:MM:SS without milliseconds."""
@@ -31,7 +32,7 @@ def process_transcripts(json_file_path, output_file_path):
             continue
         
         # Debug print
-        print(f"Processing transcript for {title}: {transcript}")
+        # print(f"Processing transcript for {title}: {transcript}")
         
         formatted_texts.append(f"Title: {title}")
         formatted_texts.append(f"Link: {link}\n")
@@ -66,8 +67,13 @@ def process_transcripts(json_file_path, output_file_path):
             formatted_texts.append(" ".join(current_text))
             formatted_texts.append("")
     
-    # Write the formatted text to a file
-    with open(output_file_path, 'w', encoding='utf-8') as file:
-        file.write("\n".join(formatted_texts))
+    try:
+        with open(output_file_path, 'w', encoding='utf-8') as file:
+            file.write("\n".join(formatted_texts))
+    except IOError as e:
+        logging.error(f"Error writing to output file: {e}")
+        return
+    
+    logging.info(f"Formatted text has been written to {output_file_path}")
     
     print(f"Formatted text has been written to {output_file_path}")
