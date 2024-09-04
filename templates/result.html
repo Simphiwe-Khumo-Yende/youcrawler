@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Transcripts Processing Complete</h1>
+        <p class="result-message">The video links and transcripts have been processed and saved.</p>
+        <a href="{{ file_url }}">Download the result file</a><br>
+        <a href="/">Go Back</a>
+    </div>
+</body>
+</html>
