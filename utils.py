@@ -24,9 +24,14 @@ def process_transcripts(json_file_path, output_file_path):
             formatted_texts.append("\nTranscript not available.\n")
             continue
         
-        if not isinstance(transcript, str):
-            formatted_texts.append("\nInvalid transcript data format.\n")
+        if isinstance(transcript, str):
+            formatted_texts.append(f"Title: {title}")
+            formatted_texts.append(f"Link: {link}")
+            formatted_texts.append(f"\nInvalid transcript data format: {transcript}\n")
             continue
+        
+        # Debug print
+        print(f"Processing transcript for {title}: {transcript}")
         
         formatted_texts.append(f"Title: {title}")
         formatted_texts.append(f"Link: {link}\n")
@@ -36,7 +41,7 @@ def process_transcripts(json_file_path, output_file_path):
         current_text = []
 
         for entry in transcript:
-            if not isinstance(entry, dict):
+            if not isinstance(entry, dict) or 'start' not in entry or 'text' not in entry:
                 formatted_texts.append(f"Unexpected entry format: {entry}")
                 continue
 
