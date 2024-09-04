@@ -1,4 +1,3 @@
 scrapetube
 youtube_transcript_api
 flask
-streamlit
