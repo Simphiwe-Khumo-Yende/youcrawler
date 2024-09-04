@@ -5,17 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Transcript App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function showSpinner() {
+            document.getElementById('spinner').style.display = 'flex';
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Video Transcript App</h1>
-        <form action="/" method="post">
+        <form action="/" method="post" onsubmit="showSpinner()">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required><br>
             <label for="content_type">Content endpoint [streams, videos]:</label>
             <input type="text" id="content_type" name="content_type" required><br>
             <button type="submit">Submit</button>
         </form>
+        <div id="spinner" class="spinner">
+            <div class="spinner-border"></div>
+            <div class="spinner-message">Processing... This could take a while...</div>
+        </div>
     </div>
 </body>
 </html>
