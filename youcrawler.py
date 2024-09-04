@@ -40,6 +40,10 @@ def index():
         username = request.form['username']
         content_type = request.form['content_type']
         
+        # Ensure the 'raw_data' directory exists
+        if not os.path.exists('raw_data'):
+            os.makedirs('raw_data')
+
         videos = scrapetube.get_channel(channel_username=username, content_type=content_type)
 
         video_links = {}
@@ -73,11 +77,19 @@ def index():
                     video_links[video_title]["transcript"] = transcript
 
         json_file_path = 'raw_data/video_links_with_transcripts.json'
-        with open(json_file_path, 'w', encoding='utf-8') as json_file:
-            json.dump(video_links, json_file, indent=4, ensure_ascii=False)
+        try:
+            with open(json_file_path, 'w', encoding='utf-8') as json_file:
+                json.dump(video_links, json_file, indent=4, ensure_ascii=False)
+        except IOError as e:
+            app.logger.error(f"Error writing JSON file: {e}")
+            return "Error writing JSON file", 500
 
         output_text_file = 'raw_data/output_transcripts.txt'
-        utils.process_transcripts(json_file_path, output_text_file)
+        try:
+            utils.process_transcripts(json_file_path, output_text_file)
+        except Exception as e:
+            app.logger.error(f"Error processing transcripts: {e}")
+            return "Error processing transcripts", 500
 
         return redirect(url_for('result'))
 
@@ -92,5 +104,5 @@ def download_file(filename):
     return send_from_directory('raw_data', filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
-
+    app.run(debug=True)
+    # app.run(host='0.0.0.0', port=8000, debug=False)
