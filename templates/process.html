@@ -3,25 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Process Information</title>
+    <title>Process Data</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Process Your Information</h1>
-        <p>Click the button below to process the data and format it into a readable text file.</p>
-        <form action="{{ url_for('process_data') }}" method="post">
-            <button type="submit">Process Information</button>
-        </form>
+        <h1>Process Data</h1>
+        
+        <div id="json-preview-container" class="json-preview-container">
+            <h2>JSON Data Preview</h2>
+            <pre id="json-preview">Loading...</pre>
+        </div>
+
+        <button id="process-button">Process Information</button>
+        <div id="result" class="result-message"></div>
+
         <div class="spinner" id="spinner">
             <div class="spinner-border"></div>
-            <div class="spinner-message">Processing your data. Please wait...</div>
+            <div class="spinner-message">Processing... Please wait.</div>
         </div>
     </div>
+
     <script>
-        // Show the spinner when the form is submitted
-        document.querySelector('form').addEventListener('submit', function() {
-            document.getElementById('spinner').style.display = 'flex';
+        $(document).ready(function() {
+            // Fetch the collected JSON data
+            $.ajax({
+                url: '/process_data',
+                method: 'POST',
+                success: function(response) {
+                    // Display the JSON data in the preview container
+                    $('#json-preview').text(JSON.stringify(response.data, null, 2));
+
+                    // Enable the process button
+                    $('#process-button').click(function() {
+                        $('#spinner').show(); // Show spinner
+
+                        $.ajax({
+                            url: '/start_processing',
+                            method: 'POST',
+                            success: function(response) {
+                                if (response.status === 'processed') {
+                                    $('#result').html('<p>Processing complete! <a href="' + response.file_url + '">Download the file</a></p>');
+                                }
+                                $('#spinner').hide(); // Hide spinner
+                            },
+                            error: function() {
+                                $('#result').html('<p>An error occurred while processing the data.</p>');
+                                $('#spinner').hide(); // Hide spinner
+                            }
+                        });
+                    });
+                },
+                error: function() {
+                    $('#json-preview').text('Failed to load JSON data.');
+                }
+            });
         });
     </script>
 </body>

@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 import logging
+import os
 
 def format_timestamp(seconds):
     """Formats timestamp into HH:MM:SS without milliseconds."""
@@ -10,9 +11,23 @@ def format_timestamp(seconds):
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 def process_transcripts(json_file_path, output_file_path):
-    with open(json_file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
+    log_file_path = os.path.join(os.path.dirname(output_file_path), 'process_log.txt')
+
+    # Initialize logging to the log file
+    logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(message)s')
     
+    logging.info("Starting transcript processing...")
+    
+    try:
+        with open(json_file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+    except IOError as e:
+        logging.error(f"Error reading JSON file: {e}")
+        return
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding JSON file: {e}")
+        return
+
     formatted_texts = []
     
     for title, details in data.items():
@@ -23,14 +38,12 @@ def process_transcripts(json_file_path, output_file_path):
             formatted_texts.append(f"Title: {title}")
             formatted_texts.append(f"Link: {link}")
             formatted_texts.append("\nTranscript not available.\n")
+            logging.info(f"Processed {title} - Transcript not available.")
             continue
         
         if isinstance(transcript, str):
-            
+            logging.warning(f"Transcript for {title} is in unexpected format (string). Skipping.")
             continue
-        
-        # Debug print
-        # print(f"Processing transcript for {title}: {transcript}")
         
         formatted_texts.append(f"Title: {title}")
         formatted_texts.append(f"Link: {link}\n")
@@ -42,6 +55,7 @@ def process_transcripts(json_file_path, output_file_path):
         for entry in transcript:
             if not isinstance(entry, dict) or 'start' not in entry or 'text' not in entry:
                 formatted_texts.append(f"Unexpected entry format: {entry}")
+                logging.error(f"Unexpected entry format for {title}: {entry}")
                 continue
 
             start = entry.get('start', 0)
@@ -64,14 +78,15 @@ def process_transcripts(json_file_path, output_file_path):
             formatted_texts.append(f"(Start: {format_timestamp(last_time)})")
             formatted_texts.append(" ".join(current_text))
             formatted_texts.append("")
-    
+
+        logging.info(f"Processed transcript for {title}.")
+
     try:
         with open(output_file_path, 'w', encoding='utf-8') as file:
             file.write("\n".join(formatted_texts))
     except IOError as e:
         logging.error(f"Error writing to output file: {e}")
         return
-    
+
     logging.info(f"Formatted text has been written to {output_file_path}")
-    
-    print(f"Formatted text has been written to {output_file_path}")
+

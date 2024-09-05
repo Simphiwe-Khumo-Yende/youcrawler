@@ -1,5 +1,3 @@
-/* static/styles.css */
-
 /* Basic Reset */
 * {
     margin: 0;
@@ -91,9 +89,30 @@ a:hover {
     }
 }
 
-/* Existing styles... */
+/* Style for the JSON preview container */
+.json-preview-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: auto;
+    margin-bottom: 20px;
+    overflow: hidden; /* Hide overflow content */
+}
 
-/* Existing styles... */
+/* Ensure that JSON preview text does not overlap */
+.json-preview {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    overflow: auto; /* Enable scrolling for overflow text */
+    white-space: pre-wrap; /* Preserve whitespace and wrap text */
+    font-family: monospace; /* Use a monospace font for better readability */
+    max-height: 500px; /* Limit the height of the preview */
+    word-wrap: break-word; /* Break long words to avoid overflow */
+}
 
 .spinner {
     display: none; /* Hidden by default */

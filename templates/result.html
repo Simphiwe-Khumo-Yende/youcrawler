@@ -3,15 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result</title>
+    <title>Process Data</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Transcripts Processing Complete</h1>
-        <p class="result-message">The video links and transcripts have been processed and saved.</p>
-        <a href="{{ file_url }}">Download the result file</a><br>
-        <a href="/">Go Back</a>
+        <h1>Process Data</h1>
+        
+        <div id="data-container" class="data-container">
+            <!-- JSON data will be displayed here -->
+        </div>
+
+        <button id="process-button">Process Information</button>
+        <div id="result" class="result-message"></div>
+
+        <div class="spinner" id="spinner">
+            <div class="spinner-border"></div>
+            <div class="spinner-message">Processing... Please wait.</div>
+        </div>
     </div>
+
+    <script>
+        $(document).ready(function() {
+            // Fetch the collected JSON data
+            $.ajax({
+                url: '/process_data',
+                method: 'POST',
+                success: function(response) {
+                    // Display the JSON data
+                    $('#data-container').html('<pre>' + JSON.stringify(response.data, null, 2) + '</pre>');
+
+                    // Enable the process button
+                    $('#process-button').click(function() {
+                        $('#spinner').show(); // Show spinner
+
+                        $.ajax({
+                            url: '/start_processing',
+                            method: 'POST',
+                            success: function(response) {
+                                if (response.status === 'processed') {
+                                    $('#result').html('<p>Processing complete! <a href="' + response.file_url + '">Download the file</a></p>');
+                                }
+                                $('#spinner').hide(); // Hide spinner
+                            },
+                            error: function() {
+                                $('#result').html('<p>An error occurred while processing the data.</p>');
+                                $('#spinner').hide(); // Hide spinner
+                            }
+                        });
+                    });
+                },
+                error: function() {
+                    $('#result').html('<p>Failed to load JSON data.</p>');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

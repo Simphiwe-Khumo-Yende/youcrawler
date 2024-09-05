@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory , jsonify
 import scrapetube
 import json
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -97,12 +97,55 @@ def process_page():
 @app.route('/process_data', methods=['POST'])
 def process_data():
     json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
-    output_text_file = os.path.join(RAW_DATA_DIR, 'output_transcripts.txt')
     
-    logging.info(f"Calling process_transcripts with JSON path: {json_file_path} and output path: {output_text_file}")
-    utils.process_transcripts(json_file_path, output_text_file)
+    if not os.path.exists(json_file_path):
+        return "JSON file not found", 404
 
-    return redirect(url_for('result'))
+    # Load the JSON data
+    try:
+        with open(json_file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+    except Exception as e:
+        return f"Error loading JSON file: {e}", 500
+
+    # Return the JSON data and a flag indicating that processing is not started yet
+    return jsonify({
+        'data': data,
+        'status': 'ready'  # Status to indicate the data is ready to be processed
+    })
+@app.route('/start_processing', methods=['POST'])
+def start_processing():
+    json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
+    output_text_file = os.path.join(RAW_DATA_DIR, 'output_transcripts.txt')
+
+    logging.info(f"Processing data from {json_file_path} to {output_text_file}")
+
+    # Process the file
+    try:
+        utils.process_transcripts(json_file_path, output_text_file)
+    except Exception as e:
+        logging.error(f"Error during processing: {e}")
+        return "Processing error", 500
+
+    if not os.path.exists(output_text_file) or os.stat(output_text_file).st_size == 0:
+        logging.error(f"Output file not generated or is empty: {output_text_file}")
+        return "Output file not generated", 500
+
+    logging.info("Processing complete. Redirecting to results.")
+    return jsonify({
+        'status': 'processed',
+        'file_url': url_for('download_file', filename='output_transcripts.txt')
+    })
+
+@app.route('/fetch_output')
+def fetch_output():
+    # Path to the log file or real-time output file
+    log_file_path = os.path.join(RAW_DATA_DIR, 'process_log.txt')
+
+    if os.path.exists(log_file_path):
+        with open(log_file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    return "No output yet."
 
 @app.route('/result')
 def result():
@@ -113,4 +156,4 @@ def download_file(filename):
     return send_from_directory(RAW_DATA_DIR, filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    app.run(host='0.0.0.0', port=9000, debug=False)
