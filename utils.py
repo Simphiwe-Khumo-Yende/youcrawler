@@ -50,17 +50,17 @@ def process_transcripts(json_file_path, output_file_path):
             logging.info(f"Processed {title} - Transcript not available.")
             continue
 
-        if transcript == "Transcripts disabled":
-            formatted_texts.append(f"Title: {title}")
-            formatted_texts.append(f"Link: {link}")
-            formatted_texts.append("\nTranscripts disabled.\n")
-            logging.info(f"Processed {title} - Transcripts disabled.")
-            continue
+        # if transcript == "Transcripts disabled":
+        #     formatted_texts.append(f"Title: {title}")
+        #     formatted_texts.append(f"Link: {link}")
+        #     formatted_texts.append("\nTranscripts disabled.\n")
+        #     logging.info(f"Processed {title} - Transcripts disabled.")
+        #     continue
 
         if isinstance(transcript, str):
-            formatted_texts.append(f"Title: {title}")
-            formatted_texts.append(f"Link: {link}")
-            formatted_texts.append("\nError: Transcript is not in expected format.\n")
+            # formatted_texts.append(f"Title: {title}")
+            # formatted_texts.append(f"Link: {link}")
+            # formatted_texts.append("\nError: Transcript is not in expected format.\n")
             logging.error(f"Transcript for {title} is not in expected format.")
             continue
         
