@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory , jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
 import scrapetube
 import json
 from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import NotTranslatable, TranscriptsDisabled, VideoUnavailable, CouldNotRetrieveTranscript, NoTranscriptAvailable
-from youtube_transcript_api._errors import CookiePathInvalid, CookiesInvalid, CouldNotRetrieveTranscript, FailedToCreateConsentCookie, InvalidVideoId, NoTranscriptAvailable, NoTranscriptFound, NotTranslatable, TooManyRequests, TranscriptsDisabled, VideoUnavailable, YouTubeRequestFailed
+from youtube_transcript_api._errors import (
+    NotTranslatable, TranscriptsDisabled, VideoUnavailable, InvalidVideoId,
+    NoTranscriptAvailable, NoTranscriptFound, TooManyRequests
+)
 import logging
 import os
 import utils
@@ -12,7 +14,7 @@ app = Flask(__name__)
 
 # Define base directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-RAW_DATA_DIR = os.path.join(BASE_DIR, 'raw_data')
+RAW_DATA_DIR = os.getenv('RAW_DATA_DIR', os.path.join(BASE_DIR, 'raw_data'))
 
 def extract_title(video_info):
     """Extracts the title from the nested video info dictionary."""
@@ -42,10 +44,9 @@ def get_transcripts(video_ids):
         except NoTranscriptFound:
             transcripts[video_id] = "No Transcript Found"
         except TooManyRequests:
-            transcripts[video_id] = "Too Many Requests"     
+            transcripts[video_id] = "Too Many Requests"
         except Exception as e:
             transcripts[video_id] = f"Error: {e}"
-
     return transcripts
 
 @app.route('/', methods=['GET', 'POST'])
@@ -53,7 +54,7 @@ def index():
     if request.method == 'POST':
         username = request.form['username']
         content_type = request.form['content_type']
-        
+
         # Ensure the 'raw_data' directory exists
         if not os.path.exists(RAW_DATA_DIR):
             os.makedirs(RAW_DATA_DIR)
@@ -69,9 +70,9 @@ def index():
 
             if not isinstance(video_title, str):
                 video_title = 'No title available'
-            
+
             video_link = f"https://www.youtube.com/watch?v={video_id}"
-            
+
             video_links[video_title] = {
                 "link": video_link,
                 "videoId": video_id,
@@ -106,7 +107,7 @@ def process_page():
 @app.route('/process_data', methods=['POST'])
 def process_data():
     json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
-    
+
     if not os.path.exists(json_file_path):
         return jsonify({'status': 'error', 'message': 'JSON file not found'}), 404
 
@@ -130,9 +131,19 @@ def start_processing():
 
     logging.info(f"Processing data from {json_file_path} to {output_text_file}")
 
+    # Check if input file exists
+    if not os.path.exists(json_file_path):
+        logging.error(f"Input JSON file not found: {json_file_path}")
+        return jsonify({'status': 'error', 'message': 'Input file not found'}), 404
+
     # Process the file
     try:
         utils.process_transcripts(json_file_path, output_text_file)
+        if os.path.exists(output_text_file):
+            logging.info(f"Output file created successfully: {output_text_file}")
+            logging.info(f"File size: {os.stat(output_text_file).st_size} bytes")
+        else:
+            logging.error(f"Output file was not created: {output_text_file}")
     except Exception as e:
         logging.error(f"Error during processing: {e}")
         return jsonify({'status': 'error', 'message': 'Processing error'}), 500

@@ -11,12 +11,21 @@ def format_timestamp(seconds):
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 def process_transcripts(json_file_path, output_file_path):
-    log_file_path = os.path.join(os.path.dirname(output_file_path), 'process_log.txt')
+    # Ensure the directory for the output file exists
+    output_dir = os.path.dirname(output_file_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    # Initialize logging to the log file
+    # Set up logging
+    log_file_path = os.path.join(output_dir, 'process_log.txt')
     logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(message)s')
     
     logging.info("Starting transcript processing...")
+
+    # Check if the JSON file exists and is readable
+    if not os.path.exists(json_file_path):
+        logging.error(f"JSON file not found: {json_file_path}")
+        return
     
     try:
         with open(json_file_path, 'r', encoding='utf-8') as file:
@@ -49,6 +58,10 @@ def process_transcripts(json_file_path, output_file_path):
             continue
 
         if isinstance(transcript, str):
+            formatted_texts.append(f"Title: {title}")
+            formatted_texts.append(f"Link: {link}")
+            formatted_texts.append("\nError: Transcript is not in expected format.\n")
+            logging.error(f"Transcript for {title} is not in expected format.")
             continue
         
         formatted_texts.append(f"Title: {title}")
@@ -69,9 +82,10 @@ def process_transcripts(json_file_path, output_file_path):
             start_time = format_timestamp(start)
             
             if start > last_time + 60:
-                formatted_texts.append(f"(Start: {format_timestamp(last_time)})")
-                formatted_texts.append(" ".join(current_text))
-                formatted_texts.append("")
+                if current_text:
+                    formatted_texts.append(f"(Start: {format_timestamp(last_time)})")
+                    formatted_texts.append(" ".join(current_text))
+                    formatted_texts.append("")
                 current_text = []
                 last_time = start
             
