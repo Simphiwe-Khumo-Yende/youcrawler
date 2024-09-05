@@ -1,4 +1,10 @@
 scrapetube
 youtube_transcript_api
+requests
+youtube-transcript-api
+mock==3.0.5
+httpretty==1.1.4
+coveralls==1.11.1
+coverage==5.2.1
 flask
 gunicorn
