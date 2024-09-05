@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Information</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Process Your Information</h1>
+        <p>Click the button below to process the data and format it into a readable text file.</p>
+        <form action="{{ url_for('process_data') }}" method="post">
+            <button type="submit">Process Information</button>
+        </form>
+        <div class="spinner" id="spinner">
+            <div class="spinner-border"></div>
+            <div class="spinner-message">Processing your data. Please wait...</div>
+        </div>
+    </div>
+    <script>
+        // Show the spinner when the form is submitted
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('spinner').style.display = 'flex';
+        });
+    </script>
+</body>
+</html>

@@ -86,13 +86,23 @@ def index():
             app.logger.error(f"Error writing JSON file: {e}")
             return "Error writing JSON file", 500
 
-        output_text_file = os.path.join(RAW_DATA_DIR, 'output_transcripts.txt')
-        logging.info(f"Calling process_transcripts with JSON path: {json_file_path} and output path: {output_text_file}")
-        utils.process_transcripts(json_file_path, output_text_file)
-
-        return redirect(url_for('result'))
+        return redirect(url_for('process_page'))
 
     return render_template('index.html')
+
+@app.route('/process')
+def process_page():
+    return render_template('process.html')
+
+@app.route('/process_data', methods=['POST'])
+def process_data():
+    json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
+    output_text_file = os.path.join(RAW_DATA_DIR, 'output_transcripts.txt')
+    
+    logging.info(f"Calling process_transcripts with JSON path: {json_file_path} and output path: {output_text_file}")
+    utils.process_transcripts(json_file_path, output_text_file)
+
+    return redirect(url_for('result'))
 
 @app.route('/result')
 def result():
@@ -103,4 +113,4 @@ def download_file(filename):
     return send_from_directory(RAW_DATA_DIR, filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    app.run(host='0.0.0.0', port=8080, debug=False)
