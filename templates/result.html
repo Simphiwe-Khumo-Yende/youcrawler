@@ -11,14 +11,15 @@
     <div class="container">
         <h1>Process Data</h1>
         
-        <div id="data-container" class="data-container">
-            <!-- JSON data will be displayed here -->
+        <div id="json-preview-container" class="json-preview-container">
+            <h2>JSON Data Preview</h2>
+            <pre id="json-preview">Loading...</pre>
         </div>
 
         <button id="process-button">Process Information</button>
         <div id="result" class="result-message"></div>
 
-        <div class="spinner" id="spinner">
+        <div class="spinner" id="spinner" style="display:none;">
             <div class="spinner-border"></div>
             <div class="spinner-message">Processing... Please wait.</div>
         </div>
@@ -31,31 +32,37 @@
                 url: '/process_data',
                 method: 'POST',
                 success: function(response) {
-                    // Display the JSON data
-                    $('#data-container').html('<pre>' + JSON.stringify(response.data, null, 2) + '</pre>');
+                    if (response.status === 'ready') {
+                        // Display the JSON data in the preview container
+                        $('#json-preview').text(JSON.stringify(response.data, null, 2));
 
-                    // Enable the process button
-                    $('#process-button').click(function() {
-                        $('#spinner').show(); // Show spinner
+                        // Enable the process button
+                        $('#process-button').click(function() {
+                            $('#spinner').show(); // Show spinner
 
-                        $.ajax({
-                            url: '/start_processing',
-                            method: 'POST',
-                            success: function(response) {
-                                if (response.status === 'processed') {
-                                    $('#result').html('<p>Processing complete! <a href="' + response.file_url + '">Download the file</a></p>');
+                            $.ajax({
+                                url: '/start_processing',
+                                method: 'POST',
+                                success: function(response) {
+                                    if (response.status === 'processed') {
+                                        $('#result').html('<p>Processing complete! <a href="' + response.file_url + '">Download the file</a></p>');
+                                    } else {
+                                        $('#result').html('<p>Processing failed: ' + response.message + '</p>');
+                                    }
+                                    $('#spinner').hide(); // Hide spinner
+                                },
+                                error: function() {
+                                    $('#result').html('<p>An error occurred while processing the data.</p>');
+                                    $('#spinner').hide(); // Hide spinner
                                 }
-                                $('#spinner').hide(); // Hide spinner
-                            },
-                            error: function() {
-                                $('#result').html('<p>An error occurred while processing the data.</p>');
-                                $('#spinner').hide(); // Hide spinner
-                            }
+                            });
                         });
-                    });
+                    } else {
+                        $('#json-preview').text('Failed to load JSON data.');
+                    }
                 },
                 error: function() {
-                    $('#result').html('<p>Failed to load JSON data.</p>');
+                    $('#json-preview').text('Failed to load JSON data.');
                 }
             });
         });

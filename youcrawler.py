@@ -35,10 +35,8 @@ def get_transcripts(video_ids):
             transcripts[video_id] = "Transcripts disabled"
         except NotTranslatable:
             transcripts[video_id] = "Not Translatable"
-        # except CouldNotRetrieveTranscript:
-        #     transcripts[video_id] = "Could Not Retrieve Transcript"
         except InvalidVideoId:
-            transcripts[video_id] = "invalid video ID"
+            transcripts[video_id] = "Invalid video ID"
         except NoTranscriptAvailable:
             transcripts[video_id] = "No Transcript Available"
         except NoTranscriptFound:
@@ -110,20 +108,21 @@ def process_data():
     json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
     
     if not os.path.exists(json_file_path):
-        return "JSON file not found", 404
+        return jsonify({'status': 'error', 'message': 'JSON file not found'}), 404
 
     # Load the JSON data
     try:
         with open(json_file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
     except Exception as e:
-        return f"Error loading JSON file: {e}", 500
+        return jsonify({'status': 'error', 'message': f"Error loading JSON file: {e}"}), 500
 
     # Return the JSON data and a flag indicating that processing is not started yet
     return jsonify({
         'data': data,
-        'status': 'ready'  # Status to indicate the data is ready to be processed
+        'status': 'ready'
     })
+
 @app.route('/start_processing', methods=['POST'])
 def start_processing():
     json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
@@ -136,11 +135,11 @@ def start_processing():
         utils.process_transcripts(json_file_path, output_text_file)
     except Exception as e:
         logging.error(f"Error during processing: {e}")
-        return "Processing error", 500
+        return jsonify({'status': 'error', 'message': 'Processing error'}), 500
 
     if not os.path.exists(output_text_file) or os.stat(output_text_file).st_size == 0:
         logging.error(f"Output file not generated or is empty: {output_text_file}")
-        return "Output file not generated", 500
+        return jsonify({'status': 'error', 'message': 'Output file not generated'}), 500
 
     logging.info("Processing complete. Redirecting to results.")
     return jsonify({
