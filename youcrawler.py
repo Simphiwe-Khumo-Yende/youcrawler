@@ -167,4 +167,4 @@ def download_file(filename):
     return send_from_directory(RAW_DATA_DIR, filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9000, debug=False)
+    app.run(host='0.0.0.0', port=8000, debug=False)
