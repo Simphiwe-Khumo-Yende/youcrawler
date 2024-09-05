@@ -2,10 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 import scrapetube
 import json
 from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import NotTranslatable, TranscriptsDisabled, VideoUnavailable
-import utils
-import os
+from youtube_transcript_api._errors import NotTranslatable, TranscriptsDisabled, VideoUnavailable, CouldNotRetrieveTranscript, NoTranscriptAvailable
+from youtube_transcript_api._errors import CookiePathInvalid, CookiesInvalid, CouldNotRetrieveTranscript, FailedToCreateConsentCookie, InvalidVideoId, NoTranscriptAvailable, NoTranscriptFound, NotTranslatable, TooManyRequests, TranscriptsDisabled, VideoUnavailable, YouTubeRequestFailed
 import logging
+import os
+import utils
 
 app = Flask(__name__)
 
@@ -34,6 +35,16 @@ def get_transcripts(video_ids):
             transcripts[video_id] = "Transcripts disabled"
         except NotTranslatable:
             transcripts[video_id] = "Not Translatable"
+        except CouldNotRetrieveTranscript:
+            transcripts[video_id] = "Could Not Retrieve Transcript"
+        except InvalidVideoId:
+            transcripts[video_id] = "invalid video ID"
+        except NoTranscriptAvailable:
+            transcripts[video_id] = "No Transcript Available"
+        except NoTranscriptFound:
+            transcripts[video_id] = "No Transcript Found"
+        except TooManyRequests:
+            transcripts[video_id] = "Too Many Requests"     
         except Exception as e:
             transcripts[video_id] = f"Error: {e}"
 
@@ -156,4 +167,4 @@ def download_file(filename):
     return send_from_directory(RAW_DATA_DIR, filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    app.run(host='0.0.0.0', port=9000, debug=False)

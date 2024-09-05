@@ -40,15 +40,20 @@ def process_transcripts(json_file_path, output_file_path):
             formatted_texts.append("\nTranscript not available.\n")
             logging.info(f"Processed {title} - Transcript not available.")
             continue
-        
+
+        if transcript == "Transcripts disabled":
+            formatted_texts.append(f"Title: {title}")
+            formatted_texts.append(f"Link: {link}")
+            formatted_texts.append("\nTranscripts disabled.\n")
+            logging.info(f"Processed {title} - Transcripts disabled.")
+            continue
+
         if isinstance(transcript, str):
-            logging.warning(f"Transcript for {title} is in unexpected format (string). Skipping.")
             continue
         
         formatted_texts.append(f"Title: {title}")
         formatted_texts.append(f"Link: {link}\n")
         
-        # Process the transcript
         last_time = 0
         current_text = []
 
@@ -63,7 +68,6 @@ def process_transcripts(json_file_path, output_file_path):
             
             start_time = format_timestamp(start)
             
-            # Check if we need to start a new time interval
             if start > last_time + 60:
                 formatted_texts.append(f"(Start: {format_timestamp(last_time)})")
                 formatted_texts.append(" ".join(current_text))
@@ -73,7 +77,6 @@ def process_transcripts(json_file_path, output_file_path):
             
             current_text.append(text)
         
-        # Append the remaining text
         if current_text:
             formatted_texts.append(f"(Start: {format_timestamp(last_time)})")
             formatted_texts.append(" ".join(current_text))
@@ -89,4 +92,3 @@ def process_transcripts(json_file_path, output_file_path):
         return
 
     logging.info(f"Formatted text has been written to {output_file_path}")
-
