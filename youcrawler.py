@@ -35,8 +35,8 @@ def get_transcripts(video_ids):
             transcripts[video_id] = "Transcripts disabled"
         except NotTranslatable:
             transcripts[video_id] = "Not Translatable"
-        except CouldNotRetrieveTranscript:
-            transcripts[video_id] = "Could Not Retrieve Transcript"
+        # except CouldNotRetrieveTranscript:
+        #     transcripts[video_id] = "Could Not Retrieve Transcript"
         except InvalidVideoId:
             transcripts[video_id] = "invalid video ID"
         except NoTranscriptAvailable:
