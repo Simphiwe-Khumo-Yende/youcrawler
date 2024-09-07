@@ -89,9 +89,12 @@ def index():
                 video_links[video_title]["transcript"] = transcript
 
         json_file_path = os.path.join(RAW_DATA_DIR, 'video_links_with_transcripts.json')
+        app.logger.info(f"Writing JSON data to {json_file_path}")
+
         try:
             with open(json_file_path, 'w', encoding='utf-8') as json_file:
                 json.dump(video_links, json_file, indent=4, ensure_ascii=False)
+            app.logger.info("JSON file written successfully.")
         except IOError as e:
             app.logger.error(f"Error writing JSON file: {e}")
             return "Error writing JSON file", 500
@@ -99,6 +102,7 @@ def index():
         return redirect(url_for('process_page'))
 
     return render_template('index.html')
+
 
 @app.route('/process')
 def process_page():
